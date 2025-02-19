@@ -5,9 +5,9 @@
 library(tidyverse)
 library(urca)
 
-setwd("C:/Users/gtd/OneDrive - Treasury/Documents/var_project")
+source("2_stationarity_function.R")
 
-################################################################################
+###############################################################################
 ############################### DATA IMPORT ####################################
 ################################################################################
 
@@ -30,24 +30,8 @@ model_1_data %>%
 
 # These series are clearly not stationary: therefore try differencing and doing unit root tests.
 
-
-
-
-
-
-var=exp(-1*(-0.391648*(LOG(MEGCON/CNR)+0.217492*(LOG(PMEGCON*(1+RTCDMEG)/PCNR))-0.010937*TREND+0.007503*TRENDBR_2008Q4+4.820867)))*cnr
-
-
-
-
-
-
-
-
-
-
-
-model_1_data <- model_1_data %>% 
+model_1_data <- model_1_data %>%
+  pivot_longer(-date) %>% 
   group_by(name) %>% 
   mutate(value = value - lag(value)) %>% 
   na.omit()
@@ -57,19 +41,8 @@ ggplot(model_1_data, aes(date, value, colour = name)) + geom_line() + facet_wrap
 # These differenced series definitely look better
 
 
-# GDP --------------------------------------------------------------------------
+######################### TESTING STATIONARITY #################################
 
-gdp_d <- model_1_data %>% 
-  filter(name == "gdp") %>% 
-  pull()
+test_types <- list(gdp = "drift", rnu = "none", cpi = "drift")
 
-plot(gdp_d, type = "l")
-
-adf_gdp_d <- ur.df(gdp_d, type = "drift")
-
-summary(adf_gdp_d)
-
-
-# Unemployment rate ------------------------------------------------------------
-
-
+stationarity_results_custom <- stationarity_tests(model_1_data, test_types)

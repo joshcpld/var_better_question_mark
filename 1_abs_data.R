@@ -201,7 +201,7 @@ lfs_data <- lfs_data %>%
 
 data <- na_data %>% 
   inner_join(lfs_data, by = "date") %>% 
-  inner_join(cpi_data, by = "date") 
+  inner_join(cpi_data, by = "date")
 
 write_csv(data, "data/data.csv")
 
