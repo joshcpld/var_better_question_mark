@@ -94,9 +94,11 @@ stationarity_tests <- function(data, test_types = NULL) {
 
 
 
+
 # Example usage with default test type (drift)
-stationarity_results <- stationarity_tests(model_1_data)
-print(stationarity_results)
+
+# stationarity_results <- stationarity_tests(model_1_data)
+# print(stationarity_results)
 
 # Example with custom test types
 
