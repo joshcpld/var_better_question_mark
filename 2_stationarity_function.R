@@ -46,7 +46,12 @@ stationarity_tests <- function(data, test_types = NULL) {
         reject_10pc <- test_stat < crit_10pc
         
         # Determine integration order based on rejection levels
-        integration_order <- if (reject_10pc) "I(0)" else "I(1)"
+        integration_order <- case_when(
+          reject_1pc ~ "I(0) at 1% significance",
+          reject_5pc ~ "I(0) at 5% significance",
+          reject_10pc ~ "I(0) at 10% significance",
+          TRUE ~ "I(1)"
+        )
         
         # Return results as a dataframe
         data.frame(
@@ -70,7 +75,7 @@ stationarity_tests <- function(data, test_types = NULL) {
   
   # Determine the strongest level of confidence at which integration orders are consistent
   if (length(integration_levels) == 1) {
-    message <- "All variables share the same integration order at the 1% significance level."
+    message <- paste("All variables share the same integration order:", integration_levels)
   } else if (all(stationarity_results$reject_5pc == stationarity_results$reject_10pc)) {
     message <- "All variables share the same integration order at the 10% significance level."
   } else if (all(stationarity_results$reject_1pc == stationarity_results$reject_5pc)) {
@@ -84,6 +89,10 @@ stationarity_tests <- function(data, test_types = NULL) {
   
   return(stationarity_results)
 }
+
+
+
+
 
 # Example usage with default test type (drift)
 stationarity_results <- stationarity_tests(model_1_data)
