@@ -13,16 +13,26 @@ source("2_stationarity_function.R")
 
 data <- read_csv("data/data.csv")
 
-
-
 ################################################################################
-################################# MODEL 1 ######################################
+############################ CHECKING MODEL STATIONARITY #######################
 ################################################################################
+
+################################## DATAFRAMES ##################################
 
 model_1_data <- data %>% 
   select(date,gdp,rnu,cpi)
 
+model_2_data <- data %>% 
+  select(date, gdp, rnu, cpi, fce, gfcf, exports, imports)
+
+model_3_data <- data %>% 
+  select(date, gdp, cpi, exports, imports, hfce, bi, di, otc, gfce, pub_gfcf, emp, unemp, twi) %>% 
+  na.omit()
+
+
 ######################## CREATING STATIONARY VARIABLES #########################
+
+# model_1 ----------
 
 model_1_data %>% 
   pivot_longer(-date) %>% 
@@ -41,8 +51,68 @@ ggplot(model_1_data, aes(date, value, colour = name)) + geom_line() + facet_wrap
 # These differenced series definitely look better
 
 
+
+
+
+# model_2 ----------
+
+model_2_data %>% 
+  pivot_longer(-date) %>% 
+  ggplot(aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+
+# These series are clearly not stationary: therefore try differencing and doing unit root tests.
+
+model_2_data <- model_2_data %>%
+  pivot_longer(-date) %>% 
+  group_by(name) %>% 
+  mutate(value = value - lag(value)) %>% 
+  na.omit()
+
+ggplot(model_2_data, aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+
+# These differenced series definitely look better
+
+
+
+
+
+
+# model_3 ----------
+
+model_3_data %>% 
+  pivot_longer(-date) %>% 
+  ggplot(aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+
+# These series are clearly not stationary: therefore try differencing and doing unit root tests.
+
+model_3_data <- model_3_data %>%
+  pivot_longer(-date) %>% 
+  group_by(name) %>% 
+  mutate(value = value - lag(value)) %>% 
+  na.omit()
+
+ggplot(model_3_data, aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+
+# These differenced series definitely look better
+
+
 ######################### TESTING STATIONARITY #################################
 
-test_types <- list(gdp = "drift", rnu = "none", cpi = "drift")
+model_1_stationarity_results <- stationarity_tests(model_1_data)
 
-stationarity_results_custom <- stationarity_tests(model_1_data, test_types)
+model_2_stationarity_results <- stationarity_tests(model_2_data)
+
+model_3_stationarity_results <- stationarity_tests(model_3_data)
+
+# According to the ADF test, all variables share the same level of integration.
+# Therefore, we can forecast produce forecasts using a VAR model.
+
+
+
+
+
+################################################################################
+############################### PRODUCING FORECASTS#############################
+################################################################################
+
+

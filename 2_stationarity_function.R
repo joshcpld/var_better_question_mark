@@ -10,19 +10,25 @@ library(urca)
 ################################ FUNCTION ######################################
 ################################################################################
 
-stationarity_tests <- function(data, test_types = NULL) {
+stationarity_tests <- function(data, test_types = NULL, diff_order = 0) {
   
-  # Create a nested dataframe of each unique time series
-  data_nested <- data %>%
+  # Tidy the data by pivoting it longer and grouping by name
+  data_tidy <- data %>%
+    pivot_longer(cols = -date, names_to = "name", values_to = "value") %>%
     group_by(name) %>%
     nest()
   
   # Apply the ADF test to each time series and store the results
-  stationarity_results <- data_nested %>%
+  stationarity_results <- data_tidy %>%
     mutate(
       adf_test = map2(name, data, ~ {
         # Extract time series values
         ts_data <- .y$value
+        
+        # Apply differencing based on the specified order
+        if (diff_order > 0) {
+          ts_data <- diff(ts_data, differences = diff_order)
+        }
         
         # Determine the test type (default to "drift" if not specified)
         test_type <- if (!is.null(test_types) && .x %in% names(test_types)) {
@@ -95,9 +101,14 @@ stationarity_tests <- function(data, test_types = NULL) {
 
 
 
+
+
+
+
+
 # Example usage with default test type (drift)
 
-# stationarity_results <- stationarity_tests(model_1_data)
+stationarity_results <- stationarity_tests(model_1_data)
 # print(stationarity_results)
 
 # Example with custom test types
