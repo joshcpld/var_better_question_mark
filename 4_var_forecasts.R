@@ -83,11 +83,11 @@ model_2_data_d %>%
   VAR(p=2, type = "const") %>% 
   serial.test()
 
-# We find a VAR(2) is appropriate for this system as well.
+# We find a VAR(2) is appropriate for this system.
 
-model_2 <- model_2_data %>% 
+model_2 <- model_2_data_d %>% 
   dplyr::select(-date) %>% 
-  VAR(p=3, type = "const")
+  VAR(p=2, type = "const")
 
 
 summary(model_2)
