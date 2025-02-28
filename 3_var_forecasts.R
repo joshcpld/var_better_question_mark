@@ -101,7 +101,9 @@ model_3_data %>%
 
 ######################### TESTING STATIONARITY #################################
 
-model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 1)
+# First need to check none of the variables are I(0)
+
+model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 0)
 
 model_2_stationarity_results <- stationarity_tests(model_2_data)
 

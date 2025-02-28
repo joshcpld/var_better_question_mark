@@ -35,7 +35,6 @@ series_ids <- tibble(
     "hfce",
     "bi",
     "di",
-    "otc",
     "gfce",
     "pub_gfcf",
     "emp",
@@ -64,7 +63,6 @@ series_ids <- tibble(
     "A2304081W", #hfce
     "A2304095K", #bi
     "A2304098T", #di
-    "A2304099V", #otc
     "A2304080V", #gfce
     "A2304109L", #pub_gfcf
     "A84423043C", #emp
