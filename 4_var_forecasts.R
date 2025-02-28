@@ -16,10 +16,6 @@ model_1_data <- data %>%
   select(date,gdp,rnu,cpi)
 
 model_2_data <- data %>% 
-  select(date, gdp, rnu, cpi, fce, gfcf, exports, imports)
-
-model_3_data <- data %>% 
-  select(date, gdp, cpi, exports, imports, hfce, bi, di, gfce, pub_gfcf, emp, unemp, twi) %>% 
   na.omit()
 
 
@@ -47,7 +43,7 @@ model_1_data %>%
 model_1_data %>% 
   dplyr::select(-date) %>% 
   VAR(p=2, type = "const") %>% 
-  serial.test(lags.bg = 2, type = "BG")
+  serial.test(lags.bg = 2)
 
 # The p-value is very small. We cannot maintain the null hypothesis of there is not 1st/2nd order autocorrelation in the residuals.
 
@@ -56,20 +52,14 @@ model_1_data %>%
 model_1_data %>% 
   dplyr::select(-date) %>% 
   VAR(p=3, type = "const") %>% 
-  serial.test(lags.bg = 2, type = "BG")
+  serial.test(lags.bg = 3)
 
-# P-value is still too small.
+# P-value large enough to maintain the null hypothesis.
 
-model_1_data %>% 
-  dplyr::select(-date) %>% 
-  VAR(p=4, type = "const") %>% 
-  serial.test(lags.bg = 1, type = "BG")
-
-# After experimenting with different models, I land on VAR(7) for model 1.
 
 model_1 <- model_1_data %>% 
   dplyr::select(-date) %>% 
-  VAR(p=7, type = "const")
+  VAR(p=3, type = "const")
 
 
 summary(model_1)
@@ -78,37 +68,22 @@ summary(model_1)
 
 
 model_2_data %>% 
-  dplyr::select(-date) %>% 
+  dplyr::select(-c(date)) %>% 
   VARselect(type = "const")
 
 # It suggests starting at lag 1
 
 model_2_data %>% 
+  dplyr::select(-c(date)) %>% 
+  VAR(p=3, type = "const") %>% 
+  serial.test(lags.bg = 3)
+
+# We also find a VAR(3) is appropriate for this system as well.
+
+model_2 <- model_2_data %>% 
   dplyr::select(-date) %>% 
-  VAR(p=1, type = "const") %>% 
-  serial.test(lags.bg = 1, type = "BG")
+  VAR(p=3, type = "const")
 
-# Tiny p-value, need larger lag.
 
-model_2_data %>% 
-  dplyr::select(-date) %>% 
-  VAR(p=7, type = "const") %>% 
-  serial.test(lags.bg = 1, type = "BG")
-
-# This result tells us we can maintain the null hypothesis of there being no 1st order autocorrelation in the residuals for a VAR(7)
-
-model_2_data %>% 
-  dplyr::select(-date) %>% 
-  VAR(p=20, type = "const") %>% 
-  serial.test(lags.bg = 2, type = "BG")
-
-# Unfortunately, we cannot maintain the hypothesis of there being no 1st/2ns order autocorrelation in the residuals in any VAR order.
-
-# What does this suggest? 
-
-model_2_residual_acf <- model_2_data %>% 
-  dplyr::select(-date) %>% 
-  VAR(p=7, type = "const") %>% 
-  residuals() %>% 
-  acf()
+summary(model_2)
 

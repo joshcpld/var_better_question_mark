@@ -28,7 +28,6 @@ series_ids <- tibble(
     "pfd", # Public final demand
     "xgs", # Exports
     "mgs", # Imports
-    "twi", # Trade Weighted Index
     "tot" # Terms of Trade
 
   ),
@@ -48,7 +47,6 @@ series_ids <- tibble(
     "A124830485W", # pfd  
     "A2304114F", # xgs
     "A2304115J", # mgs
-    "A3534043J", # twi
     "A3534885C" # tot
     
   )
