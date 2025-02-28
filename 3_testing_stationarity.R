@@ -3,7 +3,6 @@
 ################################################################################
 
 library(tidyverse)
-library(urca)
 
 source("2_stationarity_function.R")
 
@@ -105,19 +104,25 @@ model_3_data %>%
 
 model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 0)
 
-model_2_stationarity_results <- stationarity_tests(model_2_data)
+model_2_stationarity_results <- stationarity_tests(model_2_data, diff_order = 0)
 
-model_3_stationarity_results <- stationarity_tests(model_3_data)
+model_3_stationarity_results <- stationarity_tests(model_3_data, diff_order = 0)
 
-# According to the ADF test, all variables share the same level of integration.
-# Therefore, we can forecast produce forecasts using a VAR model.
-
+# Only in Model 3 is there any evidence of stationarity in the uneployment rate, which we will ignore as it's at the 10% level.
 
 
 
 
-################################################################################
-############################### PRODUCING FORECASTS#############################
-################################################################################
+# Now we see if the variables are I(1)
+
+model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 1)
+
+model_2_stationarity_results <- stationarity_tests(model_2_data, diff_order = 1)
+
+model_3_stationarity_results <- stationarity_tests(model_3_data, diff_order = 1)
+
+# All of these variables in every model are stationary at the 1% level.
+# As the variables in each model are I(1), it is appropriate to model them as a VAR.
+
 
 
