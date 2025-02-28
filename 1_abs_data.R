@@ -59,7 +59,7 @@ series_ids <- tibble(
     
     variable == "cpi" ~ "cpi",
     
-    variable %in% c("rnu", "emp", "unemp") ~ "lfs",
+    variable %in% c("rnu") ~ "lfs",
     
     variable == "tot" ~ "bop",
     
@@ -177,7 +177,9 @@ lfs_data <- lfs_data %>%
   bind_rows(lfs_data_old) %>% 
   arrange(date) %>% 
   na.omit() %>% 
-  pivot_wider(names_from = variable)
+  pivot_wider(names_from = variable) %>%
+  select(date, rnu)
+  
   
 
 
