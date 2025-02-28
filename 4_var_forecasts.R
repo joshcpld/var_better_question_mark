@@ -24,7 +24,6 @@ model_2_data <- data %>%
 # 2. Use the VARselect() function to suggests the lowest number of lags to start with.
 # 3. Test this lag order suggestion for serial autocorrelation in the residuals.
 # 4. Estimate the model with the given number of lags and ensure all coefficients are significantly < 1. 
-# 5. Actually produce your forecast
 
 library(vars) # We import this here because vars overrides dplyr's select function.
 
@@ -86,4 +85,14 @@ model_2 <- model_2_data %>%
 
 
 summary(model_2)
+
+
+
+
+################################################################################
+################################# FORECASTS ####################################
+################################################################################
+
+
+
 
