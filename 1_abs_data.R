@@ -7,8 +7,6 @@ library(tidyverse)
 library(readabs)
 library(lubridate)
 
-setwd("C:/Users/gtd/OneDrive - Treasury/Documents/var_project")
-
 ################################################################################
 ############################ SOURCING VARIABLE IDS #############################
 ################################################################################
