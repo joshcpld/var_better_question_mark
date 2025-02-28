@@ -22,12 +22,7 @@ model_1_data <- data %>%
   select(date,gdp,rnu,cpi)
 
 model_2_data <- data %>% 
-  select(date, gdp, rnu, cpi, fce, gfcf, exports, imports)
-
-model_3_data <- data %>% 
-  select(date, gdp, cpi, exports, imports, hfce, bi, di, gfce, pub_gfcf, emp, unemp, twi) %>% 
   na.omit()
-
 
 ######################## CREATING STATIONARY VARIABLES #########################
 
@@ -76,28 +71,6 @@ model_2_data %>%
 
 
 
-
-
-# model_3 ----------
-
-model_3_data %>% 
-  pivot_longer(-date) %>% 
-  ggplot(aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
-
-# These series are clearly not stationary: therefore try differencing and doing unit root tests.
-
-model_3_data %>% 
-  pivot_longer(-date) %>% 
-  group_by(name) %>% 
-  mutate(value = value - lag(value)) %>% 
-  na.omit() %>% 
-  ggplot(aes(x = date, y = value, colour = name)) + 
-  geom_line() + 
-  facet_wrap(~name, scales = "free")
-
-# These differenced series definitely look better
-
-
 ######################### TESTING STATIONARITY #################################
 
 # First need to check none of the variables are I(0)
@@ -105,11 +78,6 @@ model_3_data %>%
 model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 0)
 
 model_2_stationarity_results <- stationarity_tests(model_2_data, diff_order = 0)
-
-model_3_stationarity_results <- stationarity_tests(model_3_data, diff_order = 0)
-
-# Only in Model 3 is there any evidence of stationarity in the uneployment rate, which we will ignore as it's at the 10% level.
-
 
 
 
@@ -119,9 +87,8 @@ model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 1)
 
 model_2_stationarity_results <- stationarity_tests(model_2_data, diff_order = 1)
 
-model_3_stationarity_results <- stationarity_tests(model_3_data, diff_order = 1)
 
-# All of these variables in every model are stationary at the 1% level.
+# All of these variables in each model are stationary at the 1% level.
 # As the variables in each model are I(1), it is appropriate to model them as a VAR.
 
 
