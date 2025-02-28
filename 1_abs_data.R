@@ -28,8 +28,8 @@ series_ids <- tibble(
     "pfd", # Public final demand
     "xgs", # Exports
     "mgs", # Imports
-    "twi" # Trade Weighted Index
-    "tot", # Terms of Trade
+    "twi", # Trade Weighted Index
+    "tot" # Terms of Trade
 
   ),
   
@@ -53,72 +53,7 @@ series_ids <- tibble(
     
   )
   
-)
-
-
-
-
-
-
-
-series_ids <- tibble(
-  
-  variable = c(
-    
-    # Model 1
-    
-    "gdp",
-    "cpi",
-    "rnu",
-    
-    # Model 2 additions
-    
-    "fce",
-    "gfcf",
-    "exports",
-    "imports",
-    
-    # Model 3 additions
-    
-    "hfce",
-    "bi",
-    "di",
-    "gfce",
-    "pub_gfcf",
-    "emp",
-    "unemp",
-    "twi",
-    
-    
-  ),
-  
-  series_id = c(
-    
-    # Model 1
-    
-    "A2304402X", #GDP
-    "A2325846C", #inflation
-    "A84423050A", #rnu
-
-    # Model 2 additions
-    
-    "A2304082X", #fce
-    "A2304110W", #gfcf
-    "A2304114F", #exports
-    "A2304115J", #imports
-    
-    # Model 3 additions
-    
-    "A2304081W", #hfce
-    "A2304095K", #bi
-    "A2304098T", #di
-    "A2304080V", #gfce
-    "A2304109L", #pub_gfcf
-    "A84423043C", #emp
-    "A84423046K", #unemp
-    "A3534043J" #twi
-    
-  )) %>% 
+  ) %>% 
   
   mutate(release = case_when(
     
@@ -126,9 +61,13 @@ series_ids <- tibble(
     
     variable %in% c("rnu", "emp", "unemp") ~ "lfs",
     
+    variable == "tot" ~ "bop",
+    
     TRUE ~ "na"
     
   ))
+
+
 
 
 
@@ -160,10 +99,10 @@ na_data <- map2_dfr(
   pivot_wider(names_from = variable)
 
 
-# CPI data
+# CPI  & BoP data
 
 
-cpi_ids <- series_ids %>% filter(release == "cpi")
+cpi_ids <- series_ids %>% filter(release == "cpi" | release == "bop")
 
 cpi_data <- map2_dfr(
   
