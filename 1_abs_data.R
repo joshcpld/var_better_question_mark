@@ -17,6 +17,56 @@ series_ids <- tibble(
     
     # Model 1
     
+    "gdp", # Gross Domestic Product
+    "cpi", # Inflation
+    "rnu", # Unemployment rate
+    
+    # Model 2 additions
+    
+    "hfce", # Household consumption
+    "priv_gfcf", # Private investment
+    "pfd", # Public final demand
+    "xgs", # Exports
+    "mgs", # Imports
+    "twi" # Trade Weighted Index
+    "tot", # Terms of Trade
+
+  ),
+  
+  series_id = c(
+    
+    # Model 1
+    
+    "A2304402X", # GDP
+    "A2325846C", # inflation
+    "A84423050A", # rnu
+    
+    # Model 2 additions
+    
+    "A2304081W", # hfce
+    "A2304100T", # priv_gfcf
+    "A124830485W", # pfd  
+    "A2304114F", # xgs
+    "A2304115J", # mgs
+    "A3534043J", # twi
+    "A3534885C" # tot
+    
+  )
+  
+)
+
+
+
+
+
+
+
+series_ids <- tibble(
+  
+  variable = c(
+    
+    # Model 1
+    
     "gdp",
     "cpi",
     "rnu",
@@ -37,7 +87,8 @@ series_ids <- tibble(
     "pub_gfcf",
     "emp",
     "unemp",
-    "twi"
+    "twi",
+    
     
   ),
   
