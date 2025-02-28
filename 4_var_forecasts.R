@@ -15,7 +15,22 @@ data <- read_csv("data/data.csv")
 model_1_data <- data %>% 
   select(date,gdp,rnu,cpi)
 
+model_1_data_d <- model_1_data %>% 
+  pivot_longer(-date) %>%
+  group_by(name) %>% 
+  mutate(value = value - lag(value)) %>% 
+  pivot_wider(names_from = name, values_from = value) %>% 
+  na.omit()
+
+
 model_2_data <- data %>% 
+  na.omit()
+
+model_2_data_d <- model_2_data %>% 
+  pivot_longer(-date) %>%
+  group_by(name) %>% 
+  mutate(value = value - lag(value)) %>% 
+  pivot_wider(names_from = name, values_from = value) %>% 
   na.omit()
 
 
@@ -33,32 +48,23 @@ library(vars) # We import this here because vars overrides dplyr's select functi
 
 ################################ MODEL 1 #######################################
 
-model_1_data %>% 
+model_1_data_d %>% 
   dplyr::select(-date) %>% 
   VARselect(type = "const")
 
-# It suggests starting at lag 2
+# It suggests starting at lag 1
 
-model_1_data %>% 
+model_1_data_d %>% 
   dplyr::select(-date) %>% 
-  VAR(p=2, type = "const") %>% 
-  serial.test(lags.bg = 2)
+  VAR(p=1, type = "const") %>% 
+  serial.test()
 
-# The p-value is very small. We cannot maintain the null hypothesis of there is not 1st/2nd order autocorrelation in the residuals.
+# The p-value is large enough to maintain the null hypothesis of there being no autocorrelation in the residuals in a VAR(1).
 
-# Let's try increasing the lags.
 
-model_1_data %>% 
+model_1 <- model_1_data_d %>% 
   dplyr::select(-date) %>% 
-  VAR(p=3, type = "const") %>% 
-  serial.test(lags.bg = 3)
-
-# P-value large enough to maintain the null hypothesis.
-
-
-model_1 <- model_1_data %>% 
-  dplyr::select(-date) %>% 
-  VAR(p=3, type = "const")
+  VAR(p=1, type = "const")
 
 
 summary(model_1)
@@ -66,18 +72,18 @@ summary(model_1)
 ################################ MODEL 2 #######################################
 
 
-model_2_data %>% 
+model_2_data_d %>% 
   dplyr::select(-c(date)) %>% 
   VARselect(type = "const")
 
 # It suggests starting at lag 1
 
-model_2_data %>% 
+model_2_data_d %>% 
   dplyr::select(-c(date)) %>% 
-  VAR(p=3, type = "const") %>% 
-  serial.test(lags.bg = 3)
+  VAR(p=2, type = "const") %>% 
+  serial.test()
 
-# We also find a VAR(3) is appropriate for this system as well.
+# We find a VAR(2) is appropriate for this system as well.
 
 model_2 <- model_2_data %>% 
   dplyr::select(-date) %>% 
