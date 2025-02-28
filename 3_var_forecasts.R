@@ -26,7 +26,7 @@ model_2_data <- data %>%
   select(date, gdp, rnu, cpi, fce, gfcf, exports, imports)
 
 model_3_data <- data %>% 
-  select(date, gdp, cpi, exports, imports, hfce, bi, di, otc, gfce, pub_gfcf, emp, unemp, twi) %>% 
+  select(date, gdp, cpi, exports, imports, hfce, bi, di, gfce, pub_gfcf, emp, unemp, twi) %>% 
   na.omit()
 
 
@@ -40,13 +40,14 @@ model_1_data %>%
 
 # These series are clearly not stationary: therefore try differencing and doing unit root tests.
 
-model_1_data <- model_1_data %>%
+model_1_data %>% 
   pivot_longer(-date) %>% 
   group_by(name) %>% 
   mutate(value = value - lag(value)) %>% 
-  na.omit()
-
-ggplot(model_1_data, aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+  na.omit() %>% 
+  ggplot(aes(x = date, y = value, colour = name)) + 
+  geom_line() + 
+  facet_wrap(~name, scales = "free")
 
 # These differenced series definitely look better
 
@@ -62,13 +63,14 @@ model_2_data %>%
 
 # These series are clearly not stationary: therefore try differencing and doing unit root tests.
 
-model_2_data <- model_2_data %>%
+model_2_data %>% 
   pivot_longer(-date) %>% 
   group_by(name) %>% 
   mutate(value = value - lag(value)) %>% 
-  na.omit()
-
-ggplot(model_2_data, aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+  na.omit() %>% 
+  ggplot(aes(x = date, y = value, colour = name)) + 
+  geom_line() + 
+  facet_wrap(~name, scales = "free")
 
 # These differenced series definitely look better
 
@@ -85,20 +87,21 @@ model_3_data %>%
 
 # These series are clearly not stationary: therefore try differencing and doing unit root tests.
 
-model_3_data <- model_3_data %>%
+model_3_data %>% 
   pivot_longer(-date) %>% 
   group_by(name) %>% 
   mutate(value = value - lag(value)) %>% 
-  na.omit()
-
-ggplot(model_3_data, aes(date, value, colour = name)) + geom_line() + facet_wrap(~name, scales = "free")
+  na.omit() %>% 
+  ggplot(aes(x = date, y = value, colour = name)) + 
+  geom_line() + 
+  facet_wrap(~name, scales = "free")
 
 # These differenced series definitely look better
 
 
 ######################### TESTING STATIONARITY #################################
 
-model_1_stationarity_results <- stationarity_tests(model_1_data)
+model_1_stationarity_results <- stationarity_tests(model_1_data, diff_order = 1)
 
 model_2_stationarity_results <- stationarity_tests(model_2_data)
 

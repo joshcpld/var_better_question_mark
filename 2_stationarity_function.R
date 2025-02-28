@@ -10,7 +10,7 @@ library(urca)
 ################################ FUNCTION ######################################
 ################################################################################
 
-stationarity_tests <- function(data, test_types = NULL, diff_order = 0) {
+stationarity_tests <- function(data, test_types = NULL, diff_order) {
   
   # Tidy the data by pivoting it longer and grouping by name
   data_tidy <- data %>%
@@ -22,76 +22,86 @@ stationarity_tests <- function(data, test_types = NULL, diff_order = 0) {
   stationarity_results <- data_tidy %>%
     mutate(
       adf_test = map2(name, data, ~ {
-        # Extract time series values
         ts_data <- .y$value
         
-        # Apply differencing based on the specified order
         if (diff_order > 0) {
           ts_data <- diff(ts_data, differences = diff_order)
         }
         
-        # Determine the test type (default to "drift" if not specified)
         test_type <- if (!is.null(test_types) && .x %in% names(test_types)) {
           test_types[[.x]]
         } else {
           "drift"
         }
         
-        # Perform ADF test with BIC-based lag selection
         adf_result <- ur.df(ts_data, type = test_type, selectlags = "BIC")
         
-        # Extract test statistic and critical values
         test_stat <- adf_result@teststat[1]
         crit_1pc <- adf_result@cval[1, 1]
         crit_5pc <- adf_result@cval[1, 2]
         crit_10pc <- adf_result@cval[1, 3]
         
-        # Determine rejection status (TRUE means we reject null of unit root -> I(0))
         reject_1pc <- test_stat < crit_1pc
         reject_5pc <- test_stat < crit_5pc
         reject_10pc <- test_stat < crit_10pc
         
-        # Determine integration order based on rejection levels
-        integration_order <- case_when(
-          reject_1pc ~ "I(0) at 1% significance",
-          reject_5pc ~ "I(0) at 5% significance",
-          reject_10pc ~ "I(0) at 10% significance",
-          TRUE ~ "I(1)"
-        )
-        
-        # Return results as a dataframe
         data.frame(
           test_statistic = test_stat,
-          crit_value_1pc = crit_1pc,
-          crit_value_5pc = crit_5pc,
-          crit_value_10pc = crit_10pc,
           reject_1pc = reject_1pc,
           reject_5pc = reject_5pc,
           reject_10pc = reject_10pc,
-          integration_order = integration_order,
           test_type = test_type
         )
       })
     ) %>%
     select(name, adf_test) %>%
-    unnest(cols = adf_test)
+    unnest(cols = adf_test, names_repair = "unique")
   
-  # Check if all variables share the same integration order
-  integration_levels <- unique(stationarity_results$integration_order)
+  # Categorize variables based on rejection levels
+  cannot_reject <- stationarity_results %>%
+    filter(!reject_10pc) %>%
+    pull(name)
+  reject_10pc <- stationarity_results %>%
+    filter(reject_10pc & !reject_5pc) %>%
+    pull(name)
+  reject_5pc <- stationarity_results %>%
+    filter(reject_5pc & !reject_1pc) %>%
+    pull(name)
+  reject_1pc <- stationarity_results %>%
+    filter(reject_1pc) %>%
+    pull(name)
   
-  # Determine the strongest level of confidence at which integration orders are consistent
-  if (length(integration_levels) == 1) {
-    message <- paste("All variables share the same integration order:", integration_levels)
-  } else if (all(stationarity_results$reject_5pc == stationarity_results$reject_10pc)) {
-    message <- "All variables share the same integration order at the 10% significance level."
-  } else if (all(stationarity_results$reject_1pc == stationarity_results$reject_5pc)) {
-    message <- "All variables share the same integration order at the 5% significance level."
-  } else {
-    message <- "The variables do not share the same integration order at any conventional significance level."
+  # Print messages
+  if (length(cannot_reject) > 0) {
+    message("Cannot reject the null hypothesis for: ", paste(cannot_reject, collapse = ", "))
+  }
+  if (length(reject_10pc) > 0) {
+    message("Evidence of stationarity at the 10% level for: ", paste(reject_10pc, collapse = ", "))
+  }
+  if (length(reject_5pc) > 0) {
+    message("Evidence of stationarity at the 5% level for: ", paste(reject_5pc, collapse = ", "))
+  }
+  if (length(reject_1pc) > 0) {
+    message("Evidence of stationarity at the 1% level for: ", paste(reject_1pc, collapse = ", "))
   }
   
-  # Print the message
-  print(message)
+  # Determine overall conclusion
+  if (length(cannot_reject) == nrow(stationarity_results)) {
+    message("There is no evidence of stationarity in any of these variables.")
+  } else {
+    unique_rejection_levels <- list(reject_10pc, reject_5pc, reject_1pc) %>%
+      map(~ sort(.)) %>%
+      discard(~ length(.) == 0) %>%
+      unique()
+    
+    if (length(unique_rejection_levels) == 1) {
+      message("These variables all support stationarity at the ",
+              ifelse(length(reject_1pc) > 0, "1%", ifelse(length(reject_5pc) > 0, "5%", "10%")),
+              " significance level.")
+    } else {
+      message("The variables do not support stationarity at the same significance level.")
+    }
+  }
   
   return(stationarity_results)
 }
@@ -108,7 +118,7 @@ stationarity_tests <- function(data, test_types = NULL, diff_order = 0) {
 
 # Example usage with default test type (drift)
 
-stationarity_results <- stationarity_tests(model_1_data)
+stationarity_results <- stationarity_tests(model_3_data, diff_order = 0)
 # print(stationarity_results)
 
 # Example with custom test types
