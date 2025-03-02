@@ -104,14 +104,17 @@ detach("package:vars", unload = TRUE)
 
 # I'm going to be producing 3 year-ahead forecasts. This equates to 12 quarters into the future.
 
+
+
+
+################################### MODEL 1 ####################################
+
 # I need to reshape the model data to produce level forecast efficiently
 
 model_1_data_long <- model_1_data %>% 
   pivot_longer(-date)
 
-
-################################### MODEL 1 ####################################
-
+# Actually producing and retrieving forecasts
 
 model_1_fc_d <- map_dfc(predict(model_1, h = 12)$fcst, 
                         ~ as.data.frame(.x[, c("fcst", "lower", "upper")])) %>%
@@ -121,11 +124,36 @@ model_1_fc_d <- map_dfc(predict(model_1, h = 12)$fcst,
   pivot_longer(cols = -date,  
                names_to = c("name", "fc_type"),  
                names_pattern = "(.*)_(.*)",
-               values_to = "value")
+               values_to = "value") %>% 
+  mutate(step_ahead = 1:n()) %>% 
+  mutate(fc_start_date = min(date))
+
+# Turning these differenced forecasts into levels
 
 model_1_fc <- model_1_fc_d %>% 
   bind_rows(model_1_data_long %>% filter(date == max(date))) %>% 
   arrange(date) %>% 
   group_by(name) %>% 
-  mutate(level = cumsum(value))
+  mutate(level = cumsum(value)) %>% 
+  mutate() %>% 
+  dplyr::select(date, name, fc_type, fc_start_date, step_ahead, value = level)
+
+# Combining with actuals data to chart
+
+model_1_data_w_fcast  <- model_1_data_long %>% 
+  bind_rows(model_1_fc) %>% 
+  mutate(fc_type = case_when(
+    
+    is.na(fc_type) ~ "actual",
+    TRUE ~ fc_type
+    
+  ))
+
+
+model_1_data_w_fcast %>% 
+  filter(date > as.Date("2022-06-01")) %>% 
+ggplot(aes(date, value, colour = fc_type)) + 
+  geom_line() +
+  facet_wrap(~name, scales = "free")
+
 
