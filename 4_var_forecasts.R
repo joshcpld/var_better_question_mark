@@ -104,13 +104,28 @@ detach("package:vars", unload = TRUE)
 
 # I'm going to be producing 3 year-ahead forecasts. This equates to 12 quarters into the future.
 
+# I need to reshape the model data to produce level forecast efficiently
+
+model_1_data_long <- model_1_data %>% 
+  pivot_longer(-date)
+
 
 ################################### MODEL 1 ####################################
 
 
+model_1_fc_d <- map_dfc(predict(model_1, h = 12)$fcst, 
+                        ~ as.data.frame(.x[, c("fcst", "lower", "upper")])) %>%
+  set_names(rep(paste0(rep(names(predict(model_1, h = 12)$fcst), each = 3), c("_fcst", "_lower", "_upper")), length.out = ncol(.))) %>% 
+  mutate(date = (max(data$date) %m+% months(3)) + months(rep(0:11, length.out = nrow(.)))) %>% 
+  dplyr::select(date, everything()) %>% 
+  pivot_longer(cols = -date,  
+               names_to = c("name", "fc_type"),  
+               names_pattern = "(.*)_(.*)",
+               values_to = "value")
 
-model_1_fcast <- forecast(model_1, h = 12)
-
-
-
+model_1_fc <- model_1_fc_d %>% 
+  bind_rows(model_1_data_long %>% filter(date == max(date))) %>% 
+  arrange(date) %>% 
+  group_by(name) %>% 
+  mutate(level = cumsum(value))
 
