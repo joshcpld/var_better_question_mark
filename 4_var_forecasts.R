@@ -65,7 +65,7 @@ model_1_data_d %>%
 
 model_1 <- model_1_data_d %>% 
   dplyr::select(-date) %>% 
-  VAR(p=1, type = "const")
+  VAR(p=1, type = "const") 
 
 
 summary(model_1)
@@ -135,7 +135,7 @@ model_1_fc <- model_1_fc_d %>%
   arrange(date) %>% 
   group_by(name) %>% 
   mutate(level = cumsum(value)) %>% 
-  mutate() %>% 
+  ungroup() %>% 
   dplyr::select(date, name, fc_type, fc_start_date, step_ahead, value = level)
 
 # Combining with actuals data to chart
@@ -150,10 +150,20 @@ model_1_data_w_fcast  <- model_1_data_long %>%
   ))
 
 
-model_1_data_w_fcast %>% 
-  filter(date > as.Date("2022-06-01")) %>% 
+
+
+# These outputs are not centring around zero, which is causing an explosive series.
+
+model_1_fc_d %>% 
+  # filter(date > as.Date("2022-06-01")) %>% 
 ggplot(aes(date, value, colour = fc_type)) + 
   geom_line() +
   facet_wrap(~name, scales = "free")
+
+
+irf_result <- irf(model_1, impulse = "rnu", response = "cpi", n.ahead = 10, boot = TRUE)
+plot(irf_result)
+
+
 
 
